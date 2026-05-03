@@ -4,36 +4,53 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { PlayerProvider } from "./contexts/PlayerContext";
+import Navbar from "./components/Navbar";
+import GlobalPlayer from "./components/GlobalPlayer";
 import Home from "./pages/Home";
+import Explore from "./pages/Explore";
+import Upload from "./pages/Upload";
+import TrackDetail from "./pages/TrackDetail";
+import Profile from "./pages/Profile";
+
+function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main className="pt-16 pb-24">
+        {children}
+      </main>
+      <GlobalPlayer />
+    </div>
+  );
+}
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      <Route path="/" component={Home} />
+      <Route path="/explore" component={Explore} />
+      <Route path="/upload" component={Upload} />
+      <Route path="/track/:id" component={TrackDetail} />
+      <Route path="/profile/:id" component={Profile} />
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+      <ThemeProvider defaultTheme="dark">
+        <PlayerProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Layout>
+              <Router />
+            </Layout>
+          </TooltipProvider>
+        </PlayerProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
