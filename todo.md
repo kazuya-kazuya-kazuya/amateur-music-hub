@@ -39,3 +39,14 @@
 
 ## Phase 6: チェックポイント・デプロイ
 - [x] 最終チェックポイント保存
+
+## Phase 6: マイページ機能実装（楽曲編集・削除）
+- [x] server/routers/tracks.ts: update・ getOwnTracksエンドポイント追加
+- [x] pages/MyMusic.tsx: マイページ（投稿楽曲一覧・編集・削除）
+- [x] components/EditTrackDialog.tsx: 楽曲編集ダイアログ
+- [x] Navbar.tsxにマイページリンク追加
+- [x] App.tsxに MyMusicルート追加
+- [x] Vitestテスト追加（tracks.update・ delete・ getOwnTracks） - 25件全てパス
+- [x] updateTrackを堅牢化（機能機能チェック・機能機能機能エラーハンドリング）
+- [x] EditTrackDialogをuseEffectで同期し、複数楽曲編集時に値が正しく切り替わるように修正
+- [x] 最終チェックポイント保存

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, Music2, Search, Upload, User, X, LogIn, LogOut } from "lucide-react";
+import { Menu, Music2, Search, Upload, User, X, LogIn, LogOut, Music } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -112,6 +112,12 @@ export default function Navbar({ onSearch }: NavbarProps) {
                         プロフィール
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/mymusic" className="flex items-center gap-2 cursor-pointer">
+                        <Music size={14} />
+                        マイ楽曲
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => logoutMutation.mutate()}
@@ -180,6 +186,12 @@ export default function Navbar({ onSearch }: NavbarProps) {
                   <Button size="sm" variant="outline" className="w-full">
                     <User size={14} className="mr-1.5" />
                     プロフィール
+                  </Button>
+                </Link>
+                <Link href="/mymusic" onClick={() => setMobileOpen(false)}>
+                  <Button size="sm" variant="outline" className="w-full">
+                    <Music size={14} className="mr-1.5" />
+                    マイ楽曲
                   </Button>
                 </Link>
                 <Button

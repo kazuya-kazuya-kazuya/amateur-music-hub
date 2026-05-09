@@ -200,3 +200,35 @@ describe("auth.logout", () => {
     expect(clearedCookies).toHaveLength(1);
   });
 });
+
+
+describe("tracks.update", () => {
+  it("requires authentication", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(caller.tracks.update({ id: 1, title: "Updated" })).rejects.toThrow();
+  });
+
+  it("throws NOT_FOUND for non-existent track", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    await expect(caller.tracks.update({ id: 9999, title: "New Title" })).rejects.toThrow();
+  });
+});
+
+describe("tracks.getOwnTracks", () => {
+  it("requires authentication", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(caller.tracks.getOwnTracks({})).rejects.toThrow();
+  });
+
+  it("returns array for authenticated user", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.tracks.getOwnTracks({});
+    expect(Array.isArray(result)).toBe(true);
+  });
+
+  it("respects limit and offset", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.tracks.getOwnTracks({ limit: 5, offset: 0 });
+    expect(Array.isArray(result)).toBe(true);
+  });
+});

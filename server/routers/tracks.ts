@@ -7,6 +7,8 @@ import {
   getTrackWithUser,
   getTracksWithUser,
   incrementPlayCount,
+  updateTrack,
+  getOwnTracks,
 } from "../db";
 import { storagePut } from "../storage";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
@@ -54,13 +56,11 @@ export const tracksRouter = router({
         description: z.string().optional(),
         genre: z.string().optional(),
         tags: z.array(z.string()).optional(),
-        // base64 encoded audio file
         audioBase64: z.string(),
         audioMime: z.string().default("audio/mpeg"),
         audioFileName: z.string(),
         duration: z.number().optional(),
         waveformData: z.array(z.number()).optional(),
-        // optional cover image
         coverBase64: z.string().optional(),
         coverMime: z.string().optional(),
         coverFileName: z.string().optional(),
@@ -70,12 +70,10 @@ export const tracksRouter = router({
       const userId = ctx.user.id;
       const timestamp = Date.now();
 
-      // Upload audio file
       const audioBuffer = Buffer.from(input.audioBase64, "base64");
       const audioKey = `tracks/${userId}/${timestamp}-${input.audioFileName}`;
       const { url: fileUrl } = await storagePut(audioKey, audioBuffer, input.audioMime);
 
-      // Upload cover image if provided
       let coverKey: string | undefined;
       let coverUrl: string | undefined;
       if (input.coverBase64 && input.coverMime && input.coverFileName) {
@@ -115,5 +113,47 @@ export const tracksRouter = router({
     .mutation(async ({ input, ctx }) => {
       await deleteTrack(input.id, ctx.user.id);
       return { success: true };
+    }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string().min(1).max(255).optional(),
+        description: z.string().optional(),
+        genre: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      try {
+        await updateTrack(input.id, ctx.user.id, {
+          title: input.title,
+          description: input.description,
+          genre: input.genre,
+          tags: input.tags,
+        });
+        return { success: true };
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : "Update failed";
+        if (msg === "Track not found") throw new TRPCError({ code: "NOT_FOUND" });
+        if (msg === "Unauthorized") throw new TRPCError({ code: "FORBIDDEN" });
+        throw new TRPCError({ code: "BAD_REQUEST", message: msg });
+      }
+    }),
+
+  getOwnTracks: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).optional().default(20),
+        offset: z.number().min(0).optional().default(0),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const tracks = await getOwnTracks(ctx.user.id, input.limit, input.offset);
+      return tracks.map((t: any) => ({
+        ...t,
+        tags: t.tags ? (JSON.parse(t.tags) as string[]) : [],
+      }));
     }),
 });

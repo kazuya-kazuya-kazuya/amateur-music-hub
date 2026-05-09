@@ -327,3 +327,58 @@ export async function getTracksWithUser(opts: {
 
   return query.limit(limit).offset(offset);
 }
+
+export async function updateTrack(
+  trackId: number,
+  userId: number,
+  data: {
+    title?: string;
+    description?: string;
+    genre?: string;
+    tags?: string[];
+  }
+) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  
+  const track = await db.select().from(tracks).where(eq(tracks.id, trackId)).limit(1);
+  if (!track[0]) throw new Error("Track not found");
+  if (track[0].userId !== userId) throw new Error("Unauthorized");
+  
+  const updateData: Record<string, unknown> = {};
+  if (data.title !== undefined) updateData.title = data.title;
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.genre !== undefined) updateData.genre = data.genre;
+  if (data.tags !== undefined) updateData.tags = JSON.stringify(data.tags);
+  
+  if (Object.keys(updateData).length === 0) throw new Error("No fields to update");
+  
+  await db.update(tracks).set(updateData).where(and(eq(tracks.id, trackId), eq(tracks.userId, userId)));
+}
+
+export async function getOwnTracks(userId: number, limit: number = 20, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: tracks.id,
+      title: tracks.title,
+      description: tracks.description,
+      genre: tracks.genre,
+      tags: tracks.tags,
+      fileUrl: tracks.fileUrl,
+      fileKey: tracks.fileKey,
+      duration: tracks.duration,
+      coverUrl: tracks.coverUrl,
+      playCount: tracks.playCount,
+      likeCount: tracks.likeCount,
+      isPublic: tracks.isPublic,
+      createdAt: tracks.createdAt,
+      userId: tracks.userId,
+    })
+    .from(tracks)
+    .where(eq(tracks.userId, userId))
+    .orderBy(desc(tracks.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
