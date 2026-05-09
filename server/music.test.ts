@@ -232,3 +232,34 @@ describe("tracks.getOwnTracks", () => {
     expect(Array.isArray(result)).toBe(true);
   });
 });
+
+
+describe("stats.getTrackStats", () => {
+  it("requires authentication", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(caller.stats.getTrackStats()).rejects.toThrow();
+  });
+
+  it("returns stats object for authenticated user", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.stats.getTrackStats();
+    expect(result).toBeDefined();
+    expect(result.tracks).toBeDefined();
+    expect(Array.isArray(result.tracks)).toBe(true);
+    expect(result.summary).toBeDefined();
+    expect(result.summary.totalTracks).toBe(0);
+    expect(result.summary.totalPlays).toBe(0);
+    expect(result.summary.totalLikes).toBe(0);
+    expect(result.summary.totalComments).toBe(0);
+    expect(result.byGenre).toBeDefined();
+  });
+
+  it("aggregates stats correctly", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.stats.getTrackStats();
+    expect(typeof result.summary.totalTracks).toBe("number");
+    expect(typeof result.summary.totalPlays).toBe("number");
+    expect(typeof result.summary.totalLikes).toBe("number");
+    expect(typeof result.summary.totalComments).toBe("number");
+  });
+});

@@ -1,4 +1,4 @@
-import { and, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, like, or, sql, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, comments, likes, tracks, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -381,4 +381,52 @@ export async function getOwnTracks(userId: number, limit: number = 20, offset: n
     .orderBy(desc(tracks.createdAt))
     .limit(limit)
     .offset(offset);
+}
+
+
+export async function getTrackStats(userId: number) {
+  const db = await getDb();
+  if (!db) return { tracks: [], timeline: [] };
+  
+  const userTracks = await db
+    .select({
+      id: tracks.id,
+      title: tracks.title,
+      genre: tracks.genre,
+      playCount: tracks.playCount,
+      likeCount: tracks.likeCount,
+      createdAt: tracks.createdAt,
+    })
+    .from(tracks)
+    .where(eq(tracks.userId, userId))
+    .orderBy(asc(tracks.createdAt));
+
+  const statsWithComments = await Promise.all(
+    userTracks.map(async (track) => {
+      const commentCount = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(comments)
+        .where(eq(comments.trackId, track.id));
+      
+      return {
+        ...track,
+        commentCount: commentCount[0]?.count || 0,
+      };
+    })
+  );
+
+  const timelineMap = new Map<string, { date: string; plays: number; likes: number }>();
+  statsWithComments.forEach((track) => {
+    const date = new Date(track.createdAt).toISOString().split('T')[0];
+    if (!timelineMap.has(date)) {
+      timelineMap.set(date, { date, plays: 0, likes: 0 });
+    }
+    const entry = timelineMap.get(date)!;
+    entry.plays += track.playCount;
+    entry.likes += track.likeCount;
+  });
+
+  const timeline = Array.from(timelineMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+  return { tracks: statsWithComments, timeline };
 }

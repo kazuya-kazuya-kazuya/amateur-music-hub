@@ -3,7 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Edit2, Trash2, Music, Play } from "lucide-react";
+import { Edit2, Trash2, Music, Play, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { usePlayer } from "@/contexts/PlayerContext";
@@ -69,9 +69,17 @@ export default function MyMusic() {
 
   return (
     <div className="container py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">マイ楽曲</h1>
-        <p className="text-muted-foreground">投稿した楽曲を管理します</p>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">マイ楽曲</h1>
+          <p className="text-muted-foreground">投稿した楽曲を管理します</p>
+        </div>
+        <a href="/mystats">
+          <Button className="gradient-neon text-white">
+            <BarChart3 size={16} className="mr-2" />
+            統計を見る
+          </Button>
+        </a>
       </div>
 
       {tracksLoading ? (

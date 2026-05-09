@@ -13,6 +13,7 @@ import Upload from "./pages/Upload";
 import TrackDetail from "./pages/TrackDetail";
 import Profile from "./pages/Profile";
 import MyMusic from "./pages/MyMusic";
+import MyStats from "./pages/MyStats";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -35,6 +36,7 @@ function Router() {
       <Route path="/track/:id" component={TrackDetail} />
       <Route path="/profile/:id" component={Profile} />
       <Route path="/mymusic" component={MyMusic} />
+      <Route path="/mystats" component={MyStats} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

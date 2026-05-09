@@ -6,6 +6,7 @@ import { tracksRouter } from "./routers/tracks";
 import { commentsRouter } from "./routers/comments";
 import { likesRouter } from "./routers/likes";
 import { usersRouter } from "./routers/users";
+import { statsRouter } from "./routers/stats";
 
 export const appRouter = router({
   system: systemRouter,
@@ -21,6 +22,7 @@ export const appRouter = router({
   comments: commentsRouter,
   likes: likesRouter,
   users: usersRouter,
+  stats: statsRouter,
 });
 
 export type AppRouter = typeof appRouter;
